@@ -47,59 +47,12 @@
             overflow: hidden;
             padding: 1rem;
             border: 1px solid #e5e7eb;
-            margin-bottom: 2rem;
         }
         iframe {
             width: 100%;
             height: 650px;
             border: none;
             display: block;
-        }
-        .system-card {
-            background: white;
-            border-radius: 12px;
-            padding: 1.5rem;
-            border: 1px solid #e5e7eb;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            margin-bottom: 2rem;
-        }
-        .system-card h2 {
-            margin-top: 0;
-            font-size: 1.5rem;
-            color: #1e3a8a;
-            border-bottom: 2px solid #f4f7f6;
-            padding-bottom: 0.5rem;
-        }
-        .metric-group {
-            display: flex;
-            gap: 2rem;
-            margin: 1rem 0;
-        }
-        .metric {
-            flex: 1;
-            background: #f8fafc;
-            padding: 1rem;
-            border-radius: 8px;
-            border: 1px solid #f1f5f9;
-        }
-        .metric span {
-            display: block;
-            font-size: 0.9rem;
-            color: #64748b;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .metric strong {
-            display: block;
-            font-size: 1.8rem;
-            color: #0f172a;
-            margin-top: 0.25rem;
-        }
-        .timestamp {
-            font-size: 0.8rem;
-            color: #64748b;
-            margin: 0;
-            text-align: right;
         }
         footer {
             background-color: #1f2937;
@@ -119,73 +72,15 @@
     </header>
 
     <main>
-        <!-- Weathercloud Dashboard Component -->
         <div class="widget-container">
-            <iframe src="https://weathercloud.net"></iframe>
-        </div>
-
-        <!-- Integrated Station Battery Telemetry Block -->
-        <div class="system-card" id="station-power-monitor">
-            <h2>Weather Station System Health</h2>
-            <div class="metric-group">
-                <div class="metric">
-                    <span>Battery State of Charge</span>
-                    <strong id="mkove-soc">Loading...</strong>
-                </div>
-                <div class="metric">
-                    <span>System Voltage</span>
-                    <strong id="mkove-voltage">Loading...</strong>
-                </div>
-            </div>
-            <p class="timestamp">Last Updated: <span id="mkove-updated">--:--</span></p>
+            <!-- REPLACE THE ID BELOW WITH YOUR ACTUAL WEATHERCLOUD ID -->
+            <iframe src="https://app.weathercloud.net/d3114488778"></iframe>
         </div>
     </main>
 
     <footer>
         <p>&copy; 2026 Redbank Weather Station &bull; Powered by VEVOR 7-in-1 Hardware</p>
     </footer>
-
-    <!-- Operational Data Ingestion Script -->
-    <script>
-    async function loadMkoveTelemetry() {
-        const mkoveRemoteId = 'um5o5xUA';
-        // Base telemetry address passing safely through a CORS request proxy
-        const targetUrl = `https://remote.mkovedata.com/api/device/${mkoveRemoteId}`;
-        const apiEndpoint = `https://allorigins.win{encodeURIComponent(targetUrl)}`;
-
-        try {
-            const response = await fetch(apiEndpoint);
-            if (!response.ok) throw new Error(`HTTP Transport Error: ${response.status}`);
-            
-            const wrapper = await response.json();
-            if (!wrapper.contents) throw new Error("API content payload empty.");
-            
-            const telemetry = JSON.parse(wrapper.contents);
-            
-            // Map parameters directly to your screen text blocks
-            document.getElementById('mkove-soc').innerText = (telemetry.soc ?? 'N/A') + '%';
-            document.getElementById('mkove-voltage').innerText = (telemetry.voltage ?? 'N/A') + ' V';
-            
-            const now = new Date();
-            document.getElementById('mkove-updated').innerText = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-            
-        } catch (error) {
-            console.error('Failed to parse active metrics:', error);
-            // Fallback status fallback strings if communication errors present themselves
-            if (document.getElementById('mkove-soc').innerText === 'Loading...') {
-                document.getElementById('mkove-soc').innerText = 'Offline';
-                document.getElementById('mkove-voltage').innerText = 'Offline';
-            }
-        }
-    }
-
-    // Initialize execution cycles
-    document.addEventListener('DOMContentLoaded', () => {
-        loadMkoveTelemetry();
-        // Request updates on a repeating 10-second interval cycle
-        setInterval(loadMkoveTelemetry, 10000);
-    });
-    </script>
 
 </body>
 </html>

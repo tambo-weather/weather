@@ -119,7 +119,7 @@
     </header>
 
     <main>
-        <!-- Weathercloud Container -->
+        <!-- Weathercloud Dashboard Component -->
         <div class="widget-container">
             <iframe src="https://weathercloud.net"></iframe>
         </div>
@@ -145,23 +145,24 @@
         <p>&copy; 2026 Redbank Weather Station &bull; Powered by VEVOR 7-in-1 Hardware</p>
     </footer>
 
+    <!-- Operational Data Ingestion Script -->
     <script>
     async function loadMkoveTelemetry() {
         const mkoveRemoteId = 'um5o5xUA';
+        // Base telemetry address passing safely through a CORS request proxy
         const targetUrl = `https://remote.mkovedata.com/api/device/${mkoveRemoteId}`;
-        
-        // Using an open CORS proxy to safely route around domain blocking rules
         const apiEndpoint = `https://allorigins.win{encodeURIComponent(targetUrl)}`;
 
         try {
             const response = await fetch(apiEndpoint);
-            if (!response.ok) throw new Error(`Network response error: ${response.status}`);
+            if (!response.ok) throw new Error(`HTTP Transport Error: ${response.status}`);
             
             const wrapper = await response.json();
-            // AllOrigins wraps the server's raw response inside a stringified .contents field
+            if (!wrapper.contents) throw new Error("API content payload empty.");
+            
             const telemetry = JSON.parse(wrapper.contents);
             
-            // Map data to the HTML interface
+            // Map parameters directly to your screen text blocks
             document.getElementById('mkove-soc').innerText = (telemetry.soc ?? 'N/A') + '%';
             document.getElementById('mkove-voltage').innerText = (telemetry.voltage ?? 'N/A') + ' V';
             
@@ -169,8 +170,8 @@
             document.getElementById('mkove-updated').innerText = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
             
         } catch (error) {
-            console.error('Failed to grab live Mkove stats via proxy:', error);
-            // Don't visually wipe the dashboard values if a single 10-second ping blips out
+            console.error('Failed to parse active metrics:', error);
+            // Fallback status fallback strings if communication errors present themselves
             if (document.getElementById('mkove-soc').innerText === 'Loading...') {
                 document.getElementById('mkove-soc').innerText = 'Offline';
                 document.getElementById('mkove-voltage').innerText = 'Offline';
@@ -178,11 +179,10 @@
         }
     }
 
-    // Run immediately when layout loads
+    // Initialize execution cycles
     document.addEventListener('DOMContentLoaded', () => {
         loadMkoveTelemetry();
-        
-        // Loop the request precisely every 10 seconds (10000ms)
+        // Request updates on a repeating 10-second interval cycle
         setInterval(loadMkoveTelemetry, 10000);
     });
     </script>

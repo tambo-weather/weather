@@ -121,7 +121,7 @@
     <main>
         <!-- Weathercloud Tracking Display Container -->
         <div class="widget-container">
-            <iframe src="https://app.weathercloud.net/d3114488778"></iframe>
+            <iframe src="https://weathercloud.net"></iframe>
         </div>
 
         <!-- Integrated Station Battery Telemetry Block -->
@@ -149,8 +149,8 @@
     <script>
     async function loadMkoveTelemetry() {
         const mkoveRemoteId = 'um5o5xUA'; 
-        // Fixed URL syntax to accurately query the endpoint using template literals
-        const apiEndpoint = `https://mkove.com{mkoveRemoteId}`; 
+        // Updated to the correct Mkove remote API server route
+        const apiEndpoint = `https://remote.mkovedata.com/api/device/${mkoveRemoteId}`; 
 
         try {
             const response = await fetch(apiEndpoint);

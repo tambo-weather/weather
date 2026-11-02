@@ -34,22 +34,20 @@
         }
         main {
             flex: 1;
-            max-width: 1200px;
+            max-width: 1300px;
             width: 100%;
             margin: 2rem auto;
             padding: 0 1rem;
             box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            gap: 2rem;
         }
+        /* Grid system to position weather elements next to device stats */
         .dashboard-grid {
             display: grid;
             grid-template-columns: 2fr 1fr;
             gap: 2rem;
             width: 100%;
         }
-        @media (max-width: 900px) {
+        @media (max-width: 992px) {
             .dashboard-grid {
                 grid-template-columns: 1fr;
             }
@@ -68,9 +66,6 @@
             border: none;
             display: block;
             border-radius: 8px;
-        }
-        .sidebar-iframe {
-            height: 650px;
         }
         footer {
             background-color: #1f2937;
@@ -91,17 +86,17 @@
 
     <main>
         <div class="dashboard-grid">
-            <!-- LEFT COLUMN: Weathercloud Telemetry -->
+            
+            <!-- LEFT PANEL: Fully Operational Weathercloud Applet -->
             <div class="widget-container">
-                <!-- IMPORTANT: Swap 'YOUR_WEATHERCLOUD_ID' with your 8 or 16-character Weathercloud Device ID -->
                 <iframe src="https://weathercloud.net"></iframe>
             </div>
 
-            <!-- RIGHT COLUMN: Secure Mkove System Dashboard -->
+            <!-- RIGHT PANEL: CORS-Proof Direct Mkove Remote Hub View -->
             <div class="widget-container">
-                <!-- Using an iframe completely bypasses the browser's security blocks -->
-                <iframe class="sidebar-iframe" src="https://mkovedata.com"></iframe>
+                <iframe src="https://mkovedata.com"></iframe>
             </div>
+
         </div>
     </main>
 

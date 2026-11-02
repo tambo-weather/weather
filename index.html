@@ -34,23 +34,12 @@
         }
         main {
             flex: 1;
-            max-width: 1300px;
+            max-width: 1200px;
             width: 100%;
             margin: 2rem auto;
             padding: 0 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
             box-sizing: border-box;
-        }
-        /* Grid system to position weather elements next to device stats */
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 2rem;
-            width: 100%;
-        }
-        @media (max-width: 992px) {
-            .dashboard-grid {
-                grid-template-columns: 1fr;
-            }
         }
         .widget-container {
             background: white;
@@ -58,14 +47,59 @@
             overflow: hidden;
             padding: 1rem;
             border: 1px solid #e5e7eb;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            margin-bottom: 2rem;
         }
         iframe {
             width: 100%;
             height: 650px;
             border: none;
             display: block;
+        }
+        .system-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            margin-bottom: 2rem;
+        }
+        .system-card h2 {
+            margin-top: 0;
+            font-size: 1.5rem;
+            color: #1e3a8a;
+            border-bottom: 2px solid #f4f7f6;
+            padding-bottom: 0.5rem;
+        }
+        .metric-group {
+            display: flex;
+            gap: 2rem;
+            margin: 1rem 0;
+        }
+        .metric {
+            flex: 1;
+            background: #f8fafc;
+            padding: 1rem;
             border-radius: 8px;
+            border: 1px solid #f1f5f9;
+        }
+        .metric span {
+            display: block;
+            font-size: 0.9rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .metric strong {
+            display: block;
+            font-size: 1.8rem;
+            color: #0f172a;
+            margin-top: 0.25rem;
+        }
+        .timestamp {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin: 0;
+            text-align: right;
         }
         footer {
             background-color: #1f2937;
@@ -85,24 +119,73 @@
     </header>
 
     <main>
-        <div class="dashboard-grid">
-            
-            <!-- LEFT PANEL: Fully Operational Weathercloud Applet -->
-            <div class="widget-container">
-                <iframe src="https://weathercloud.net"></iframe>
-            </div>
+        <!-- Weathercloud Container -->
+        <div class="widget-container">
+            <iframe src="https://weathercloud.net"></iframe>
+        </div>
 
-            <!-- RIGHT PANEL: CORS-Proof Direct Mkove Remote Hub View -->
-            <div class="widget-container">
-                <iframe src="https://mkovedata.com"></iframe>
+        <!-- Integrated Station Battery Telemetry Block -->
+        <div class="system-card" id="station-power-monitor">
+            <h2>Weather Station System Health</h2>
+            <div class="metric-group">
+                <div class="metric">
+                    <span>Battery State of Charge</span>
+                    <strong id="mkove-soc">Loading...</strong>
+                </div>
+                <div class="metric">
+                    <span>System Voltage</span>
+                    <strong id="mkove-voltage">Loading...</strong>
+                </div>
             </div>
-
+            <p class="timestamp">Last Updated: <span id="mkove-updated">--:--</span></p>
         </div>
     </main>
 
     <footer>
         <p>&copy; 2026 Redbank Weather Station &bull; Powered by VEVOR 7-in-1 Hardware</p>
     </footer>
+
+    <script>
+    async function loadMkoveTelemetry() {
+        const mkoveRemoteId = 'um5o5xUA';
+        const targetUrl = `https://remote.mkovedata.com/api/device/${mkoveRemoteId}`;
+        
+        // Using an open CORS proxy to safely route around domain blocking rules
+        const apiEndpoint = `https://allorigins.win{encodeURIComponent(targetUrl)}`;
+
+        try {
+            const response = await fetch(apiEndpoint);
+            if (!response.ok) throw new Error(`Network response error: ${response.status}`);
+            
+            const wrapper = await response.json();
+            // AllOrigins wraps the server's raw response inside a stringified .contents field
+            const telemetry = JSON.parse(wrapper.contents);
+            
+            // Map data to the HTML interface
+            document.getElementById('mkove-soc').innerText = (telemetry.soc ?? 'N/A') + '%';
+            document.getElementById('mkove-voltage').innerText = (telemetry.voltage ?? 'N/A') + ' V';
+            
+            const now = new Date();
+            document.getElementById('mkove-updated').innerText = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            
+        } catch (error) {
+            console.error('Failed to grab live Mkove stats via proxy:', error);
+            // Don't visually wipe the dashboard values if a single 10-second ping blips out
+            if (document.getElementById('mkove-soc').innerText === 'Loading...') {
+                document.getElementById('mkove-soc').innerText = 'Offline';
+                document.getElementById('mkove-voltage').innerText = 'Offline';
+            }
+        }
+    }
+
+    // Run immediately when layout loads
+    document.addEventListener('DOMContentLoaded', () => {
+        loadMkoveTelemetry();
+        
+        // Loop the request precisely every 10 seconds (10000ms)
+        setInterval(loadMkoveTelemetry, 10000);
+    });
+    </script>
 
 </body>
 </html>

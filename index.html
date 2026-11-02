@@ -38,8 +38,21 @@
             width: 100%;
             margin: 2rem auto;
             padding: 0 1rem;
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
             box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            width: 100%;
+        }
+        @media (max-width: 900px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
         }
         .widget-container {
             background: white;
@@ -47,59 +60,17 @@
             overflow: hidden;
             padding: 1rem;
             border: 1px solid #e5e7eb;
-            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         }
         iframe {
             width: 100%;
             height: 650px;
             border: none;
             display: block;
-        }
-        .system-card {
-            background: white;
-            border-radius: 12px;
-            padding: 1.5rem;
-            border: 1px solid #e5e7eb;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            margin-bottom: 2rem;
-        }
-        .system-card h2 {
-            margin-top: 0;
-            font-size: 1.5rem;
-            color: #1e3a8a;
-            border-bottom: 2px solid #f4f7f6;
-            padding-bottom: 0.5rem;
-        }
-        .metric-group {
-            display: flex;
-            gap: 2rem;
-            margin: 1rem 0;
-        }
-        .metric {
-            flex: 1;
-            background: #f8fafc;
-            padding: 1rem;
             border-radius: 8px;
-            border: 1px solid #f1f5f9;
         }
-        .metric span {
-            display: block;
-            font-size: 0.9rem;
-            color: #64748b;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .metric strong {
-            display: block;
-            font-size: 1.8rem;
-            color: #0f172a;
-            margin-top: 0.25rem;
-        }
-        .timestamp {
-            font-size: 0.8rem;
-            color: #64748b;
-            margin: 0;
-            text-align: right;
+        .sidebar-iframe {
+            height: 650px;
         }
         footer {
             background-color: #1f2937;
@@ -119,64 +90,24 @@
     </header>
 
     <main>
-        <!-- Weathercloud Tracking Display Container -->
-        <div class="widget-container">
-            <iframe src="https://weathercloud.net"></iframe>
-        </div>
-
-        <!-- Integrated Station Battery Telemetry Block -->
-        <div class="system-card" id="station-power-monitor">
-            <h2>Weather Station System Health</h2>
-            <div class="metric-group">
-                <div class="metric">
-                    <span>Battery State of Charge</span>
-                    <strong id="mkove-soc">Loading...</strong>
-                </div>
-                <div class="metric">
-                    <span>System Voltage</span>
-                    <strong id="mkove-voltage">Loading...</strong>
-                </div>
+        <div class="dashboard-grid">
+            <!-- LEFT COLUMN: Weathercloud Telemetry -->
+            <div class="widget-container">
+                <!-- IMPORTANT: Swap 'YOUR_WEATHERCLOUD_ID' with your 8 or 16-character Weathercloud Device ID -->
+                <iframe src="https://weathercloud.net"></iframe>
             </div>
-            <p class="timestamp">Last Updated: <span id="mkove-updated">--:--</span></p>
+
+            <!-- RIGHT COLUMN: Secure Mkove System Dashboard -->
+            <div class="widget-container">
+                <!-- Using an iframe completely bypasses the browser's security blocks -->
+                <iframe class="sidebar-iframe" src="https://mkovedata.com"></iframe>
+            </div>
         </div>
     </main>
 
     <footer>
         <p>&copy; 2026 Redbank Weather Station &bull; Powered by VEVOR 7-in-1 Hardware</p>
     </footer>
-
-    <!-- Operational JavaScript Engine -->
-    <script>
-    async function loadMkoveTelemetry() {
-        const mkoveRemoteId = 'um5o5xUA'; 
-        // Updated to the correct Mkove remote API server route
-        const apiEndpoint = `https://remote.mkovedata.com/api/device/${mkoveRemoteId}`; 
-
-        try {
-            const response = await fetch(apiEndpoint);
-            if (!response.ok) {
-                throw new Error(`API Error: ${response.status}`);
-            }
-            
-            const telemetry = await response.json();
-            
-            // Map JSON responses into your dashboard layout
-            document.getElementById('mkove-soc').innerText = (telemetry.soc ?? 'N/A') + '%';
-            document.getElementById('mkove-voltage').innerText = (telemetry.voltage ?? 'N/A') + ' V';
-            
-            const now = new Date();
-            document.getElementById('mkove-updated').innerText = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            
-        } catch (error) {
-            console.error('Failed to grab live Mkove stats:', error);
-            document.getElementById('mkove-soc').innerText = 'Offline';
-            document.getElementById('mkove-voltage').innerText = 'Offline';
-        }
-    }
-
-    // Run script when DOM tree structure finishes rendering
-    document.addEventListener('DOMContentLoaded', loadMkoveTelemetry);
-    </script>
 
 </body>
 </html>
